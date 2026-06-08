@@ -1,14 +1,16 @@
 const cloudinary = require("../config/cloudinary");
 const questionPaperQueue = require("../queue/questionpaper");
-const Assignment = require("../models/Assignment");
+const Assignment = require("../model/assignment");
 const generateAssignment = async (req, res) => {
     try {
         const {
+            title,
             dueDate,
             additionalInfo,
         } = req.body;
         const questionTypes = JSON.parse(req.body.questionTypes);
         console.log("Received request to generate assignment with data:", {
+            title,
             dueDate,
             additionalInfo,
             questionTypes
@@ -24,6 +26,7 @@ const generateAssignment = async (req, res) => {
         const pdfUrl = result.secure_url;
         console.log("PDF uploaded to Cloudinary:", pdfUrl);
         const assignment = await Assignment.create({
+            title,
             pdfUrl,
             dueDate,
             additionalInfo,
@@ -31,6 +34,7 @@ const generateAssignment = async (req, res) => {
             status: "pending",
         });
         const job = await questionPaperQueue.add("generateAssignment", {
+            title,
             pdfUrl,
             dueDate,
             additionalInfo,

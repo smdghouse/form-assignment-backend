@@ -1,7 +1,9 @@
-const e = require("express");
 const mongoose = require("mongoose");
-
 const assignmentSchema = new mongoose.Schema({
+    title :{
+        type:String,
+        required:true
+    },
     dueDate:{
         type: String,
         required: true

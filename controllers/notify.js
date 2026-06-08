@@ -1,5 +1,6 @@
 const { getWSS } = require("../websockets/socket")
-const Assignment = require("../models/Assignment");
+const {que_paper_cache }= require("../cache")
+const Assignment = require("../model/assignment");
 const sendNotification = async (req, res) => {
     try {
         const wss = getWSS();
@@ -17,10 +18,19 @@ const sendNotification = async (req, res) => {
             });
         }
         else {
+            console.log("this is what iam going to save",{ _id: asg._id,
+                title: asg.title,
+                questionPaper: asg.questionPaper},que_paper_cache.length)
+            que_paper_cache.push({
+                _id: asg._id,
+                title: asg.title,
+                questionPaper: asg.questionPaper
+            });
             wss.clients.forEach(client => {
                 if (client.readyState === 1) {
                     client.send(JSON.stringify({
-                        type: "completed",
+                        type: "generated",
+                        title:asg.title,
                         assignmentId,
                         questionPaper: asg.questionPaper,
                     }))
