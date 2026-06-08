@@ -1,8 +1,16 @@
-const IORedis = require('ioredis');
+const Redis = require("ioredis");
 require("dotenv").config();
-const connection = new IORedis({
-    host: process.env.REDIS_HOST,
-    port: process.env.REDIS_PORT,
-    maxRetriesPerRequest: null
+
+const connection = new Redis(process.env.REDIS_URL, {
+  maxRetriesPerRequest: null,
 });
-module.exports = connection;  
+
+connection.on("connect", () => {
+  console.log("Redis connected");
+});
+
+connection.on("error", (err) => {
+  console.error("Redis error:", err);
+});
+
+module.exports = connection;
