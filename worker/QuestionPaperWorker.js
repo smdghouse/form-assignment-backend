@@ -48,7 +48,7 @@ Generate a complete professional question paper using ONLY the provided study ma
 
 
 STUDY MATERIAL:
-${parsedata.text.slice(0, 800)}
+${parsedata.text.slice(0, 30000)}
 
 ADDITIONAL INSTRUCTIONS:
 ${additionalInfo}
@@ -233,7 +233,7 @@ STRICT FORMATTING RULES
 for (let attempt = 1; attempt <= 3; attempt++) {
     try {
         const completion = await client.chat.completions.create({
-            model: "meta-llama/llama-3.3-70b-instruct:free",
+            model: "openai/gpt-oss-120b:free",
             messages: [
                 {
                     role: "user",
