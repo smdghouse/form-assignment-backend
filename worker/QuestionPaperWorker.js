@@ -228,6 +228,10 @@ STRICT FORMATTING RULES
         console.log("Prompt for question paper generator:", prompt);
         // now send this prompt to the question paper LLM api and get the generated question paper
         console.log("-----------------------Generating question paper--------------------------------");
+       let generatedQuestionPaper;
+
+for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
         const completion = await client.chat.completions.create({
             model: "meta-llama/llama-3.3-70b-instruct:free",
             messages: [
@@ -238,8 +242,30 @@ STRICT FORMATTING RULES
             ],
         });
 
-        const generatedQuestionPaper =
+        generatedQuestionPaper =
             completion.choices[0].message.content;
+
+        break; // success
+    } catch (err) {
+        if (err.status === 429 && attempt < 3) {
+            console.log(
+                `Rate limited. Waiting 30 seconds. Attempt ${attempt}`
+            );
+
+            await new Promise(resolve =>
+                setTimeout(resolve, 30000)
+            );
+
+            continue;
+        }
+
+        throw err;
+    }
+}
+
+if (!generatedQuestionPaper) {
+    throw new Error("Failed to generate question paper");
+}
         console.log("----------------------question paper --------------------------------");
         console.log("Generated question paper:", generatedQuestionPaper);
         // now we have the generated question paper in genaiResponse.text, we can save it to the database and update the status of the assignment to completed
