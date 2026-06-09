@@ -48,7 +48,7 @@ Generate a complete professional question paper using ONLY the provided study ma
 
 
 STUDY MATERIAL:
-${parsedata.text.slice(0, 30000)}
+${parsedata.text.slice(0, 100000)}
 
 ADDITIONAL INSTRUCTIONS:
 ${additionalInfo}
