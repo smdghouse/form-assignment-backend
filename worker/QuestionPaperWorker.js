@@ -1,22 +1,26 @@
-const {Worker}  = require("bullmq");
+const { Worker } = require("bullmq");
 const assignment = require("../model/assignment");
 const axios = require("axios");
 const connectDB = require("../config/db")
 const pdfParse = require("pdf-parse");
 const connection = require("../config/redis");
-const { GoogleGenAI } = require("@google/genai");
-require("dotenv").config(); 
+require("dotenv").config();
 const url = process.env.BACKEND_URL
-const geminiApiKey = process.env.GEMINI_API_KEY;   
-(async () => {
-  await connectDB();
+const OpenAI = require("openai");
 
-  console.log("Mongo connected in worker");
+const client = new OpenAI({
+    baseURL: "https://openrouter.ai/api/v1",
+    apiKey: process.env.OPENROUTER_API_KEY,
+}); 
+(async () => {
+    await connectDB();
+
+    console.log("Mongo connected in worker");
 })();
-const worker= new Worker("questionPaperQueue", async job => {
+const worker = new Worker("questionPaperQueue", async job => {
     console.log("Processing job:", job.id);
     const {
-        
+
         pdfUrl,
         dueDate,
         additionalInfo,
@@ -31,14 +35,14 @@ const worker= new Worker("questionPaperQueue", async job => {
                 responseType: "arraybuffer"
             }
         )
-        console.log ("PDF fetched from Cloudinary")
+        console.log("PDF fetched from Cloudinary")
         const pdfBuffer = Buffer.from(response.data);
         console.log("size of the PDF buffer:", pdfBuffer.length);
         console.log(pdfParse);
         const parsedata = await pdfParse(pdfBuffer)
-        console.log("PDF text content:",parsedata.text.slice(0, 500));
+        console.log("PDF text content:", parsedata.text.slice(0, 500));
         console.log("hello guruji")
-        const prompt =` You are an experienced school examination paper setter.
+        const prompt = ` You are an experienced school examination paper setter.
 
 Generate a complete professional question paper using ONLY the provided study material.
 
@@ -223,20 +227,27 @@ STRICT FORMATTING RULES
         `
         console.log("Prompt for question paper generator:", prompt);
         // now send this prompt to the question paper LLM api and get the generated question paper
-        const genai = new GoogleGenAI({apiKey: geminiApiKey});
         console.log("-----------------------Generating question paper--------------------------------");
-        const genaiResponse = await genai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: prompt
-        })
+        const completion = await client.chat.completions.create({
+            model: "deepseek/deepseek-chat-v3-0324:free",
+            messages: [
+                {
+                    role: "user",
+                    content: prompt,
+                },
+            ],
+        });
+
+        const generatedQuestionPaper =
+            completion.choices[0].message.content;
         console.log("----------------------question paper --------------------------------");
-        console.log("Generated question paper:", genaiResponse.text);
+        console.log("Generated question paper:", generatedQuestionPaper);
         // now we have the generated question paper in genaiResponse.text, we can save it to the database and update the status of the assignment to completed
         console.log("tyring to update database with question paper")
         const updatedAssignment = await assignment.findOneAndUpdate(
             { _id: job.data.assignmentId },
             {
-                questionPaper: genaiResponse.text,
+                questionPaper: generatedQuestionPaper,
                 status: "completed"
             },
             {
@@ -250,13 +261,12 @@ STRICT FORMATTING RULES
         })
         console.log("Notification response:", notificationResponse.data);
     }
-    catch(err)
-{
-    console.error("Error processing job", err);
-    throw err;
-}
-   
-},{connection}
+    catch (err) {
+        console.error("Error processing job", err);
+        throw err;
+    }
+
+}, { connection }
 )
 worker.on("completed", job => {
     console.log(`Job ${job.id} completed successfully`);
