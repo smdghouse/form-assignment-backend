@@ -229,7 +229,7 @@ STRICT FORMATTING RULES
         // now send this prompt to the question paper LLM api and get the generated question paper
         console.log("-----------------------Generating question paper--------------------------------");
         const completion = await client.chat.completions.create({
-            model: "dqwen/qwen3-32b:free",
+            model: "qwen/qwen3-32b:free",
             messages: [
                 {
                     role: "user",
