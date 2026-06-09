@@ -263,4 +263,4 @@ worker.on("completed", job => {
 })
 worker.on("failed", (job, err) => {
     console.error(`Job ${job.id} failed with error:`, err);
-})  
+})

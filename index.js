@@ -11,6 +11,7 @@ const {setWSS} = require("./websockets/socket")
 const {sendNotification} = require("./controllers/notify");
 const assignment = require('./model/assignment');
 const {que_paper_cache} = require("./cache")
+require("./worker/QuestionPaperWorker");
 const get_all_papers = async ()=>{
    let papers =  await assignment.find(
     {
