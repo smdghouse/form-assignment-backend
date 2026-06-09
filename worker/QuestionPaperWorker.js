@@ -7,6 +7,7 @@ const connection = require("../config/redis");
 const { GoogleGenAI } = require("@google/genai");
 require("dotenv").config(); 
 const geminiApiKey = process.env.GEMINI_API_KEY;   
+const url = process.env.BACKEND_URL
 (async () => {
   await connectDB();
 
@@ -243,7 +244,7 @@ STRICT FORMATTING RULES
             }
         )
         console.log("finally updated the question paper now trying hit backend")
-        const notificationResponse = await axios.post("http://localhost:3000/api/assignment/notify", {
+        const notificationResponse = await axios.post(`${url}/api/assignment/notify`, {
             assignmentId: job.data.assignmentId,
             message: "Your question paper has been generated successfully"
         })
