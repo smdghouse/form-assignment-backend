@@ -6,8 +6,8 @@ const pdfParse = require("pdf-parse");
 const connection = require("../config/redis");
 const { GoogleGenAI } = require("@google/genai");
 require("dotenv").config(); 
-const geminiApiKey = process.env.GEMINI_API_KEY;   
 const url = process.env.BACKEND_URL
+const geminiApiKey = process.env.GEMINI_API_KEY;   
 (async () => {
   await connectDB();
 
